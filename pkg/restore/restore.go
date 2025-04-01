@@ -1332,7 +1332,7 @@ func (ctx *restoreContext) restoreItem(obj *unstructured.Unstructured, groupReso
 			errs.Add(namespace, fmt.Errorf("error preparing %s: %v", resourceID, err))
 			return warnings, errs, itemExists
 		}
-
+		restoreLogger.Infof("Additional Item To Restore: %s", executeOutput.AdditionalItems)
 		// If async plugin started async operation, add it to the ItemOperations list
 		if executeOutput.OperationID != "" {
 			resourceIdentifier := velero.ResourceIdentifier{

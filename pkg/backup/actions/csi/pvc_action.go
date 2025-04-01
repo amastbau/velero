@@ -341,7 +341,13 @@ func (p *pvcBackupItemAction) Execute(
 			dataUploadLog.Info("DataUpload is submitted successfully.")
 		}
 	} else {
-		setPVCRequestSizeToVSRestoreSize(&pvc, p.crClient, vs.Name, p.log)
+		p.log.Debugf("Patching PVC request size to fit the volumesnapshot restore size.")
+		err = setPVCRequestSizeToVSRestoreSize(&pvc, p.crClient, vs.Name, p.log)
+		if err != nil {
+			p.log.Errorf("Failed to set PVC request size: %s", err.Error())
+			return nil, nil, "", nil, errors.WithStack(err)
+		}
+
 		additionalItems = []velero.ResourceIdentifier{
 			{
 				GroupResource: kuberesource.VolumeSnapshots,
@@ -567,7 +573,6 @@ func NewPvcBackupItemAction(f client.Factory) plugincommon.HandlerInitializer {
 	}
 }
 
-
 func setPVCRequestSizeToVSRestoreSize(
 	pvc *corev1api.PersistentVolumeClaim,
 	crClient crclient.Client,
@@ -583,7 +588,7 @@ func setPVCRequestSizeToVSRestoreSize(
 		vs,
 	); err != nil {
 		return errors.Wrapf(err, "Failed to get Volumesnapshot %s/%s to restore PVC %s/%s",
-		pvc.Namespace, volumeSnapshotName, pvc.Namespace, pvc.Name)
+			pvc.Namespace, volumeSnapshotName, pvc.Namespace, pvc.Name)
 	}
 
 	if _, exists := vs.Annotations[velerov1api.VolumeSnapshotRestoreSize]; exists {
@@ -607,7 +612,7 @@ func setPVCRequestSizeToVSRestoreSize(
 
 	}
 	return nil
-	
+
 }
 
 func setPVCStorageResourceRequest(
@@ -629,5 +634,3 @@ func setPVCStorageResourceRequest(
 		}
 	}
 }
-
-
