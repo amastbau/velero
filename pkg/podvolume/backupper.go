@@ -268,12 +268,6 @@ func (b *backupper) BackupPodVolumes(backup *velerov1api.Backup, pod *corev1api.
 		return nil, pvcSummary, nil
 	}
 
-	if err := kube.IsLinuxNode(b.ctx, pod.Spec.NodeName, b.crClient); err != nil {
-		err := errors.Wrapf(err, "Pod %s/%s is not running in linux node(%s), skip", pod.Namespace, pod.Name, pod.Spec.NodeName)
-		skipAllPodVolumes(pod, volumesToBackup, err, pvcSummary, log)
-		return nil, pvcSummary, []error{err}
-	}
-
 	err := nodeagent.IsRunningInNode(b.ctx, backup.Namespace, pod.Spec.NodeName, b.crClient)
 	if err != nil {
 		skipAllPodVolumes(pod, volumesToBackup, err, pvcSummary, log)
@@ -406,6 +400,8 @@ func (b *backupper) WaitAllPodVolumesProcessed(log logrus.FieldLogger) []*velero
 		}
 	}()
 
+	log.Info("Waiting for completion of PVB")
+
 	var podVolumeBackups []*velerov1api.PodVolumeBackup
 	// if no pod volume backups are tracked, return directly to avoid issue mentioned in
 	// https://github.com/vmware-tanzu/velero/issues/8723
@@ -430,8 +426,10 @@ func (b *backupper) WaitAllPodVolumesProcessed(log logrus.FieldLogger) []*velero
 				continue
 			}
 			podVolumeBackups = append(podVolumeBackups, pvb)
-			if pvb.Status.Phase == velerov1api.PodVolumeBackupPhaseFailed || pvb.Status.Phase == velerov1api.PodVolumeBackupPhaseCanceled {
+			if pvb.Status.Phase == velerov1api.PodVolumeBackupPhaseFailed {
 				log.Errorf("pod volume backup failed: %s", pvb.Status.Message)
+			} else if pvb.Status.Phase == velerov1api.PodVolumeBackupPhaseCanceled {
+				log.Errorf("pod volume backup canceled: %s", pvb.Status.Message)
 			}
 		}
 	}
