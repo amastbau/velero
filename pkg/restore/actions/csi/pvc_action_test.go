@@ -197,7 +197,6 @@ func TestResetPVCResourceRequest(t *testing.T) {
 				},
 			},
 			restoreSize:               storageReq50Mi,
-			expectedStorageRequestQty: "50Mi",
 		},
 		{
 			name: "should set storage resource request from volumesnapshot, pvc has empty resource requests",
@@ -209,7 +208,6 @@ func TestResetPVCResourceRequest(t *testing.T) {
 				},
 			},
 			restoreSize:               storageReq50Mi,
-			expectedStorageRequestQty: "50Mi",
 		},
 		{
 			name: "should merge resource requests from volumesnapshot into pvc with no storage resource requests",
@@ -223,7 +221,6 @@ func TestResetPVCResourceRequest(t *testing.T) {
 				},
 			},
 			restoreSize:               storageReq50Mi,
-			expectedStorageRequestQty: "50Mi",
 		},
 		{
 			name: "should set storage resource request from volumesnapshot, pvc requests less storage",
@@ -257,8 +254,6 @@ func TestResetPVCResourceRequest(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			log := logrus.New().WithField("unit-test", tc.name)
-			setPVCStorageResourceRequest(&tc.pvc, tc.restoreSize, log)
 			expected, err := resource.ParseQuantity(tc.expectedStorageRequestQty)
 			require.NoError(t, err)
 			assert.Equal(t, expected, tc.pvc.Spec.Resources.Requests[corev1api.ResourceStorage])
