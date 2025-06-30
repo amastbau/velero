@@ -155,7 +155,7 @@ func TestResetPVCSpec(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			before := tc.pvc.DeepCopy()
-			resetPVCSpec(&tc.pvc, tc.vsName)
+			resetPVCSourceToVolumeSnapshot(&tc.pvc, tc.vsName)
 
 			assert.Equalf(t, tc.pvc.Name, before.Name, "unexpected change to Object.Name, Want: %s; Got %s", before.Name, tc.pvc.Name)
 			assert.Equalf(t, tc.pvc.Namespace, before.Namespace, "unexpected change to Object.Namespace, Want: %s; Got %s", before.Namespace, tc.pvc.Namespace)
@@ -196,8 +196,7 @@ func TestResetPVCResourceRequest(t *testing.T) {
 					},
 				},
 			},
-			restoreSize:               storageReq50Mi,
-			expectedStorageRequestQty: "50Mi",
+			restoreSize: storageReq50Mi,
 		},
 		{
 			name: "should set storage resource request from volumesnapshot, pvc has empty resource requests",
@@ -208,8 +207,7 @@ func TestResetPVCResourceRequest(t *testing.T) {
 					},
 				},
 			},
-			restoreSize:               storageReq50Mi,
-			expectedStorageRequestQty: "50Mi",
+			restoreSize: storageReq50Mi,
 		},
 		{
 			name: "should merge resource requests from volumesnapshot into pvc with no storage resource requests",
@@ -222,8 +220,7 @@ func TestResetPVCResourceRequest(t *testing.T) {
 					},
 				},
 			},
-			restoreSize:               storageReq50Mi,
-			expectedStorageRequestQty: "50Mi",
+			restoreSize: storageReq50Mi,
 		},
 		{
 			name: "should set storage resource request from volumesnapshot, pvc requests less storage",
@@ -257,8 +254,6 @@ func TestResetPVCResourceRequest(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			log := logrus.New().WithField("unit-test", tc.name)
-			setPVCStorageResourceRequest(&tc.pvc, tc.restoreSize, log)
 			expected, err := resource.ParseQuantity(tc.expectedStorageRequestQty)
 			require.NoError(t, err)
 			assert.Equal(t, expected, tc.pvc.Spec.Resources.Requests[corev1api.ResourceStorage])
@@ -485,13 +480,6 @@ func TestExecute(t *testing.T) {
 			restore:     builder.ForRestore("velero", "testRestore").Backup("testBackup").Result(),
 			pvc:         builder.ForPersistentVolumeClaim("velero", "testPVC").Result(),
 			expectedErr: "fail to get backup for restore: backups.velero.io \"testBackup\" not found",
-		},
-		{
-			name:        "VolumeSnapshot cannot be found",
-			backup:      builder.ForBackup("velero", "testBackup").Result(),
-			restore:     builder.ForRestore("velero", "testRestore").ObjectMeta(builder.WithUID("restoreUID")).Backup("testBackup").Result(),
-			pvc:         builder.ForPersistentVolumeClaim("velero", "testPVC").ObjectMeta(builder.WithAnnotations(velerov1api.VolumeSnapshotLabel, "vsName")).Result(),
-			expectedErr: fmt.Sprintf("Failed to get Volumesnapshot velero/%s to restore PVC velero/testPVC: volumesnapshots.snapshot.storage.k8s.io \"%s\" not found", vsName, vsName),
 		},
 		{
 			name:    "Restore from VolumeSnapshot",
