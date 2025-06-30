@@ -196,7 +196,7 @@ func TestResetPVCResourceRequest(t *testing.T) {
 					},
 				},
 			},
-			restoreSize:               storageReq50Mi,
+			restoreSize: storageReq50Mi,
 		},
 		{
 			name: "should set storage resource request from volumesnapshot, pvc has empty resource requests",
@@ -207,7 +207,7 @@ func TestResetPVCResourceRequest(t *testing.T) {
 					},
 				},
 			},
-			restoreSize:               storageReq50Mi,
+			restoreSize: storageReq50Mi,
 		},
 		{
 			name: "should merge resource requests from volumesnapshot into pvc with no storage resource requests",
@@ -220,7 +220,7 @@ func TestResetPVCResourceRequest(t *testing.T) {
 					},
 				},
 			},
-			restoreSize:               storageReq50Mi,
+			restoreSize: storageReq50Mi,
 		},
 		{
 			name: "should set storage resource request from volumesnapshot, pvc requests less storage",

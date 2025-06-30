@@ -315,7 +315,6 @@ func (p *pvcBackupItemAction) Execute(
 			return nil, nil, "", nil, errors.WithStack(err)
 		}
 
-
 		dataUploadLog.Info("Starting data upload of backup")
 
 		dataUpload, err := createDataUpload(

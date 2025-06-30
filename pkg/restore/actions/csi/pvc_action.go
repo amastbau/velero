@@ -171,7 +171,8 @@ func (p *pvcRestoreItemAction) Execute(
 			p.log.Debugf("Setting PVC source to VolumeSnapshot new name: %s", newVSName)
 			resetPVCSourceToVolumeSnapshot(&pvc, newVSName)
 
-			p.log.Debugf("Returing VolumeSnapshot VolumeSnapshot %s in addtional resource item to restore", vsName)
+			// This is the corrected line:
+			p.log.Debugf("Returning VolumeSnapshot %s in additional resource item to restore", vsName)
 			additionalItems = append(additionalItems, velero.ResourceIdentifier{
 				GroupResource: kuberesource.VolumeSnapshots,
 				Name:          vsName,

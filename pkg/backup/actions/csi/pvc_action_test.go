@@ -168,24 +168,6 @@ func TestExecute(t *testing.T) {
 			crClient := velerotest.NewFakeControllerRuntimeClient(t)
 			logger := logrus.New()
 			logger.Level = logrus.DebugLevel
-			objects := make([]runtime.Object, 0)
-			if tc.pvc != nil {
-				objects = append(objects, tc.pvc)
-			}
-			if tc.pv != nil {
-				objects = append(objects, tc.pv)
-			}
-			if tc.sc != nil {
-				objects = append(objects, tc.sc)
-			}
-			if tc.vsClass != nil {
-				objects = append(objects, tc.vsClass)
-			}
-			if tc.resourcePolicy != nil {
-				objects = append(objects, tc.resourcePolicy)
-			}
-
-
 			pvcBIA := pvcBackupItemAction{
 				log:      logger,
 				crClient: crClient,
@@ -261,7 +243,7 @@ func TestExecute(t *testing.T) {
 			}
 
 			if tc.additionalItems != nil {
-				require.Equal(t, len(tc.additionalItems), len(resultAdditionalItems))
+				require.Len(t, resultAdditionalItems, len(tc.additionalItems))
 				require.Contains(t, resultAdditionalItems[0].Name, tc.additionalItems[0].Name)
 				require.Equal(t, tc.additionalItems[0].GroupResource, resultAdditionalItems[0].GroupResource)
 			}
